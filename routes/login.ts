@@ -2,7 +2,7 @@
  * Copyright (c) 2014-2022 Bjoern Kimminich & the OWASP Juice Shop contributors.
  * SPDX-License-Identifier: MIT
  */
-
+const protectonce = require('@protectonce/agent');
 import models = require('../models/index')
 import { Request, Response, NextFunction } from 'express'
 import { Basket, User } from '../data/types'
@@ -33,6 +33,7 @@ module.exports = function login () {
     models.sequelize.query(`SELECT * FROM Users WHERE email = '${req.body.email || ''}' AND password = '${security.hash(req.body.password || '')}' AND deletedAt IS NULL`, { model: models.User, plain: true }) // vuln-code-snippet vuln-line loginAdminChallenge loginBenderChallenge loginJimChallenge
       .then((authenticatedUser: { data: User }) => { // vuln-code-snippet neutral-line loginAdminChallenge loginBenderChallenge loginJimChallenge
         const user = utils.queryResultToJson(authenticatedUser)
+        const email = req.body.email
         if (user.data?.id && user.data.totpSecret !== '') {
           res.status(401).json({
             status: 'totp_token_required',
@@ -45,7 +46,9 @@ module.exports = function login () {
           })
         } else if (user.data?.id) {
           afterLogin(user, res, next)
+          req.protectonce.reportLogin(true, email);
         } else {
+          req.protectonce.reportLogin(false, email);
           res.status(401).send(res.__('Invalid email or password.'))
         }
       }).catch((error: Error) => {

@@ -2,6 +2,7 @@
  * Copyright (c) 2014-2022 Bjoern Kimminich & the OWASP Juice Shop contributors.
  * SPDX-License-Identifier: MIT
  */
+const protectonce = require('@protectonce/agent');
 import dataErasure from './routes/dataErasure'
 import fs = require('fs')
 import { Request, Response, NextFunction } from 'express'
@@ -136,7 +137,7 @@ restoreOverwrittenFilesWithOriginals().then(() => {
   app.locals.captchaBypassReqTimes = []
   app.locals.abused_ssti_bug = false
   app.locals.abused_ssrf_bug = false
-
+  app.use(protectonce.middleware);
   /* Compression for all requests */
   app.use(compression())
 
