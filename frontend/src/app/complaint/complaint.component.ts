@@ -80,6 +80,7 @@ export class ComplaintComponent implements OnInit {
 
   saveComplaint () {
     this.complaint.message = this.messageControl.value
+    this.complaintService.masti(this.complaint.message).subscribe((res) => {console.log('response ',res)}, (err) => {console.error(err)});
     this.complaintService.save(this.complaint).subscribe((savedComplaint: any) => {
       this.translate.get('CUSTOMER_SUPPORT_COMPLAINT_REPLY', { ref: savedComplaint.id }).subscribe((customerSupportReply) => {
         this.confirmation = customerSupportReply
